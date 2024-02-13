@@ -5,7 +5,7 @@
         private int _rating;
         private const int CountOfSymbolsPerPage = 1000;
         private readonly List<Page> _pages = new List<Page>();
-        public Book(string name, string text, string author, DateOnly dateOfPublishing):this(name, author, dateOfPublishing)
+        public Book(string name, string text, string author, DateOnly dateOfPublishing) : this(name, author, dateOfPublishing)
         {
             if (string.IsNullOrWhiteSpace(text))
                 throw new Exception("Text is empty");
@@ -59,11 +59,11 @@
 
         public string GetText(int index)
         {
-                if (index < _pages.Count)
-                {
-                    return new string(_pages[index].Text);
-                }
-                return $"Index must be from {0} to {_pages.Count - 1} !";
+            if (index < _pages.Count)
+            {
+                return new string(_pages[index].Text);
+            }
+            return $"Index must be from {0} to {_pages.Count - 1} !";
         }
     }
 }
