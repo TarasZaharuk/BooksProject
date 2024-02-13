@@ -1,0 +1,93 @@
+﻿@page "/"
+@inject HttpClient Http
+@inject HttpClient httpClient
+@using BookCore
+
+<PageTitle>Books</PageTitle>
+<h1>Books</h1>
+<MudTable Items="data" ServerData="@(new Func<TableState, Task<TableData<Book>>>(LoadData))"
+          @ref="table" Height="calc(100vh-20vh)" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Books</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search by Name" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="name_field" T="Book">Name</MudTableSortLabel></MudTh>
+        <MudTh>Author</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Date</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Rating</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Author</MudTd>
+            <MudTd>@context.GetInfo()</MudTd>
+            <MudTd>@context.DateOfPublishing</MudTd>
+            @if (context.Status == Status.Draft)
+            {
+                <MudTd><MudImage Src="draftImage.png" Width="20" Height="20" /></MudTd>
+            }
+            @if (context.Status == Status.Active)
+            {
+                <MudTd><MudImage Src="activeImage.png" Width="20" Height="20" /></MudTd>
+            }
+        <MudTd>
+            <div class="d-lg-table">
+                <MudRating Disabled="true" @bind-SelectedValue="context.Rating" />
+            </div>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+@code {
+    List<Book> books = new List<Book>();
+    private MudTable<Book>? table;
+    private string? searchString;
+    private IEnumerable<Book> data = new List<Book>();
+    public Books()
+    {
+        Random random = new Random();
+        for (int i = 0; i < 50; i++)
+        {
+            if (i % 2 != 0)
+            {
+                books.Add(new Book($"AName{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
+                books[i].Rating = random.Next(1, 6);
+            }
+            else
+            {
+                books.Add(new Book($"BName{i}", $"text{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
+                books[i].Rating = random.Next(1, 6);
+            }
+        }
+        data = books;
+    }
+    private async Task<TableData<Book>> LoadData(TableState state)
+    {
+        IEnumerable<Book> data = books;
+        await Task.Delay(300);
+        data = data.Where(element =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }).ToArray();
+        switch (state.SortLabel)
+        {
+            case "name_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.Name);
+                break;
+        }
+        return new TableData<Book>() { Items = data };
+    }
+    private void OnSearch(string text)
+    {
+        searchString = text;
+        if (table != null)
+            table.ReloadServerData();
+    }
+}
