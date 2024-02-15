@@ -48,10 +48,10 @@
 </MudTable>
 @code {
     List<Book> books = new List<Book>();
-    private MudTable<Book> table = new MudTable<Book>();
+    private MudTable<Book> table = null!;
     private string? searchString;
-    private IEnumerable<Book> data = new List<Book>();
-    [Inject] private IDialogService DialogService { get; set; } = new DialogService();
+    private IEnumerable<Book> data = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     public Books()
     {
@@ -104,7 +104,7 @@
     {
             bool? result = await DialogService.ShowMessageBox(
             "Warning",
-            $"You Really want to delete '{books[index].Name}' book",
+            $"Do you want to delete '{books[index].Name}' book?",
             yesText: "Delete", cancelText: "Cancel");
             if(result == true)
             {
@@ -118,7 +118,7 @@
     {
        bool? result = await DialogService.ShowMessageBox(
        "Warning",
-       $"You Really want to delete all '{books.Count}' books",
+       $"Do you want to delete {books.Count} books?",
        yesText: "Delete", cancelText: "Cancel");
         if (result == true)
         {
