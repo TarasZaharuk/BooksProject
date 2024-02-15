@@ -6,7 +6,7 @@
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
 <MudTable Items="data" ServerData="@(new Func<TableState, Task<TableData<Book>>>(LoadData))"
-          @ref="table" Height="calc(100vh-20vh)" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true">
+          @ref="table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Books</MudText>
         <MudSpacer />
@@ -20,9 +20,13 @@
         <MudTh>Date</MudTh>
         <MudTh>Status</MudTh>
         <MudTh>Rating</MudTh>
+        @if(books.Count > 0)
+        {
+        <MudTh><MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
+        }
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Name</MudTd>
             <MudTd>@context.Author</MudTd>
             <MudTd>@context.GetInfo()</MudTd>
             <MudTd>@context.DateOfPublishing</MudTd>
@@ -34,18 +38,21 @@
             {
                 <MudTd><MudImage Src="activeImage.png" Width="20" Height="20" /></MudTd>
             }
-        <MudTd>
-            <div class="d-lg-table">
-                <MudRating Disabled="true" @bind-SelectedValue="context.Rating" />
-            </div>
-        </MudTd>
+            <MudTd>
+                <div class="d-lg-table">
+                    <MudRating Disabled="true" @bind-SelectedValue="context.Rating" />
+                </div>
+            </MudTd>
+        <MudTd><MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteBook(books.IndexOf(context))"></MudIconButton></MudTd>
     </RowTemplate>
 </MudTable>
 @code {
     List<Book> books = new List<Book>();
-    private MudTable<Book>? table;
+    private MudTable<Book> table = new MudTable<Book>();
     private string? searchString;
     private IEnumerable<Book> data = new List<Book>();
+    [Inject] private IDialogService DialogService { get; set; } = new DialogService();
+
     public Books()
     {
         Random random = new Random();
@@ -64,6 +71,7 @@
         }
         data = books;
     }
+
     private async Task<TableData<Book>> LoadData(TableState state)
     {
         IEnumerable<Book> data = books;
@@ -84,10 +92,38 @@
         }
         return new TableData<Book>() { Items = data };
     }
+
     private void OnSearch(string text)
     {
         searchString = text;
-        if (table != null)
-            table.ReloadServerData();
+
+        table.ReloadServerData();
+    }
+
+    private async Task DeleteBook(int index)
+    {
+            bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            $"You Really want to delete '{books[index].Name}' book",
+            yesText: "Delete", cancelText: "Cancel");
+            if(result == true)
+            {
+                books.RemoveAt(index);
+
+                await table.ReloadServerData();
+            }
+    }
+
+    private async Task Delete()
+    {
+       bool? result = await DialogService.ShowMessageBox(
+       "Warning",
+       $"You Really want to delete all '{books.Count}' books",
+       yesText: "Delete", cancelText: "Cancel");
+        if (result == true)
+        {
+            books.Clear();
+            await table.ReloadServerData();
+        }
     }
 }
