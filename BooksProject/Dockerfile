@@ -17,4 +17,4 @@ RUN dotnet publish "BooksProject.csproj" -c Release -o /app/publish /p:UseAppHos
 FROM  base AS final
 WORKDIR /usr/share/nginx/html
 COPY --from=publish /app/publish/wwwroot .
-COPY  BooksProject/nginx.conf /etc/nginx/nginx.conf
+#COPY  BooksProject/nginx.conf /etc/nginx/nginx.conf
