@@ -35,4 +35,13 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+   
+    - task: AzureContainerApps@1
+      inputs:
+        acrUsername: 'lpplatform' 
+        acrPassword: 'UH5PM0BssIwpVAzs77iVtJUYqpuEn2rQwiV1ri2VyQ+ACRBDg86d'
+        azureSubscription: 'globalServiceConnection'
+        containerAppName: 'lp-containers'
+        resourceGroup: 'LPResourceGroup'
+        imageToDeploy: 'lpplatform.azurecr.io/bookappwasm:$(Build.BuildId)'
         
