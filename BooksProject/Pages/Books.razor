@@ -52,7 +52,7 @@
     </RowTemplate>
 </MudTable>
 
-<MudDialog IsVisible="_isDialogVisible">
+<MudDialog @bind-IsVisible="@_isDialogVisible">
     <DialogContent>       
             <div class="d-flex flex-column">
                 <MudGrid>
@@ -165,7 +165,7 @@
             book.Description = Description;
             _books.Add(book);
             await table.ReloadServerData();
-            _isDialogVisible = false;
+            CloseDialog();
         }
     }
 
@@ -185,5 +185,8 @@
     private void CloseDialog()
     {
         _isDialogVisible = false;
+        Name = string.Empty;
+        Author = string.Empty;
+        Description = string.Empty;
     }
 }
