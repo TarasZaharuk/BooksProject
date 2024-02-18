@@ -40,7 +40,13 @@
         public string Author { get; private set; }
         public DateOnly DateOfPublishing { get; private set; }
         public string Name { get; private set; }
-        public string GetInfo() => $"{Name}-{Author}-{DateOfPublishing.Year}";
+        public string Description { get; set; } = null!;
+        public string GetInfo() 
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                return $"{Name}-{Author}-{DateOfPublishing.Year}";
+            else return Description;
+        }
         private void InnitPages(string text)
         {
             do
