@@ -5,13 +5,6 @@
         private int _rating;
         private const int CountOfSymbolsPerPage = 1000;
         private readonly List<Page> _pages = new List<Page>();
-        public Book(string name, string text, string author, DateOnly dateOfPublishing) : this(name, author, dateOfPublishing)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                throw new Exception("Text is empty");
-            Status = Status.Active;
-            InnitPages(text);
-        }
         public Book(string name, string author, DateOnly dateOfPublishing)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -47,8 +40,10 @@
                 return $"{Name}-{Author}-{DateOfPublishing.Year}";
             else return Description;
         }
-        private void InnitPages(string text)
+
+        public void LoadText(string text)
         {
+            _pages.Clear();
             do
             {
                 if (text.Length < CountOfSymbolsPerPage)
@@ -60,6 +55,7 @@
                 _pages.Add(new Page { Text = new string(text.Take(firstSpaceIndex).ToArray()) });
                 text = text.Remove(0, firstSpaceIndex);
             } while (text.Length != 0);
+            Status = Status.Active;
         }
         public int CountOfPages { get { return _pages.Count; } }
 

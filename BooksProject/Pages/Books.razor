@@ -6,72 +6,99 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
 @using MudBlazor.Dialog
+@inject ISnackbar Snackbar
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable Items="data" ServerData="@(new Func<TableState, Task<TableData<Book>>>(LoadData))"
-          @ref="table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="true">
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="data" ServerData="@(new Func<TableState, Task<TableData<Book>>>(LoadData))"
+          @ref="table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Books</MudText>
-        <MudIconButton Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OpenDialog"></MudIconButton>
-        <MudSpacer />
-        <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search by Name" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        @if (!_isDialogVisible)
+        {
+            <MudText Typo="Typo.h6">Books</MudText>
+            <MudIconButton DisableRipple="_isDialogVisible" Disabled="_isDialogVisible" Icon="@Icons.Material.Outlined.Add" Color="Color.Success" OnClick="OpenDialog"></MudIconButton>
+            <MudSpacer />
+            <MudTextField Disabled="_isDialogVisible" T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search by Name" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        }
     </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="name_field" T="Book">Name</MudTableSortLabel></MudTh>
+        @if (_isDialogVisible)
+        {
+            <MudTh>Name</MudTh>
+        }
+        else
+        {
+            <MudTh><MudTableSortLabel SortLabel="name_field" T="Book">Name</MudTableSortLabel></MudTh>
+        }
         <MudTh>Author</MudTh>
         <MudTh>Description</MudTh>
         <MudTh>Date</MudTh>
         <MudTh>Status</MudTh>
-        <MudTh>Rating</MudTh>
+        <MudTh><div class="ml-10">Rating</div></MudTh>
         @if (_books.Count > 0)
         {
-            <MudTh><MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
+            <MudTh><MudIconButton Disabled="_isDialogVisible" Class="ml-8" Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
         }
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Name</MudTd>
-        <MudTd>@context.Author</MudTd>
-        <MudTd>@context.GetInfo()</MudTd>
-        <MudTd>@context.DateOfPublishing</MudTd>
-        @if (context.Status == Status.Draft)
-        {
-            <MudTd><MudImage Src="draftImage.png" Width="20" Height="20" /></MudTd>
-        }
-        @if (context.Status == Status.Active)
-        {
-            <MudTd><MudImage Src="activeImage.png" Width="20" Height="20" /></MudTd>
-        }
-        <MudTd>
-            <div class="d-lg-table">
-                <MudRating Disabled="true" @bind-SelectedValue="context.Rating" />
-            </div>
-        </MudTd>
-        <MudTd><MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteBook(_books.IndexOf(context))"></MudIconButton></MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.Name</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.Author</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.GetInfo()</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.DateOfPublishing</MudTd>
+            @if (context.Status == Status.Draft)
+            {
+                <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))"><MudImage Class="ml-3" Src="draftImage.png" Width="20" Height="20" /></MudTd>
+            }
+            @if (context.Status == Status.Active)
+            {
+                <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))"><MudImage Class="ml-3" Src="activeImage.png" Width="20" Height="20" /></MudTd>
+            }
+
+            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">
+                <MudRating DisableRipple="_isDialogVisible" Disabled="true" @bind-SelectedValue="context.Rating" />
+            </MudTd>
+
+            <MudTd>
+                <MudFileUpload T="IBrowserFile" OnFilesChanged="(args)=>UploadFile(args , _books.IndexOf(context))" Context="contextFile" Accept=".txt">
+                    <ButtonTemplate>
+                        <MudButtonGroup Variant="Variant.Outlined">
+                            <MudIconButton DisableRipple="true" HtmlTag="label" Color="Color.Success"
+                                           Variant="Variant.Text"
+                                           Size="Size.Small"
+                                           for="@contextFile.Id" Disabled="@(_isDialogVisible)">
+                                Load text
+                            </MudIconButton>
+                            <MudIconButton DisableRipple="_isDialogVisible" Icon="@Icons.Material.Filled.Delete" Disabled="@(_isDialogVisible)" aria-label="delete" OnClick="()=>DeleteBook(_books.IndexOf(context))"></MudIconButton>
+                        </MudButtonGroup>
+
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudTd>
     </RowTemplate>
 </MudTable>
 
-<MudDialog @bind-IsVisible="@_isDialogVisible">
-    <DialogContent>       
-            <div class="d-flex flex-column">
-                <MudGrid>
+<MudDialog @bind-IsVisible="_isDialogVisible">
+    <DialogContent>
+        <div class="d-flex flex-column">
+            <MudGrid>
                 <h1 class="mt-n3 mx-auto">Create book</h1>
                 <MudTextField T="string" Class="mt-n8 mx-auto" Label="Name" Required="true" @bind-Value="@Name" RequiredError="Name is required!" AutoGrow="true" FullWidth="true" />
                 <MudTextField T="string" Label="Author" Required="true" @bind-Value="@Author" RequiredError="Author is required!" AutoGrow="true" FullWidth="true" />
                 <MudTextField T="string" Class="mt-n2 mx-auto" HelperText="Description is not required" Required="false" @bind-Value="@Description" Lines="4" FullWidth="true" />
                 <MudDatePicker PickerVariant="PickerVariant.Dialog" @bind-Date="_date" Label="Change Date" Class="pa-3" MaxDate="DateTime.Now"></MudDatePicker>
-                </MudGrid>
-                <div class="align-self-sm-end">
-                    <MudButton OnClick="@CloseDialog" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
-                    <MudButton Class="ml-auto mr-n3 mb-1" Color="Color.Success" Disabled="@CanCreateBook()" OnClick="CreateBook">Create</MudButton>
-                </div>
+            </MudGrid>
+            <div class="align-self-sm-end">
+                <MudButton OnClick="@CloseDialog" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                <MudButton Class="ml-auto mr-n3 mb-1" Color="Color.Success" Disabled="@CanCreateBook()" OnClick="CreateBook">Create</MudButton>
             </div>
+        </div>
     </DialogContent>
 </MudDialog>
+
 @code {
 
-    [Inject] 
+    [Inject]
     private IDialogService DialogService { get; set; } = null!;
     private IEnumerable<Book> data = null!;
     private List<Book> _books = new List<Book>();
@@ -88,17 +115,10 @@
     {
         for (int i = 0; i < 50; i++)
         {
-            if (i % 2 != 0)
-            {
-                _books.Add(new Book($"AName{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
-                _books[i].Rating = _random.Next(1, 6);
-            }
-            else
-            {
-                _books.Add(new Book($"BName{i}", $"text{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
-                _books[i].Rating = _random.Next(1, 6);
-            }
+            _books.Add(new Book($"AName{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
+            _books[i].Rating = _random.Next(1, 6);
         }
+
         data = _books;
     }
 
@@ -188,5 +208,25 @@
         Name = string.Empty;
         Author = string.Empty;
         Description = string.Empty;
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs inputFile, int bookIndex)
+    {
+        if (inputFile.File.ContentType.StartsWith("text"))
+        {
+            var buffer = new byte[inputFile.File.Size];
+            await inputFile.File.OpenReadStream().ReadAsync(buffer);
+            _books[bookIndex].LoadText(System.Text.Encoding.UTF8.GetString(buffer));
+            Snackbar.Add($"text loaded in '{_books[bookIndex].Name}' book, pages count:{_books[bookIndex].CountOfPages}", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("File format not supported", Severity.Error);
+        }
+    }
+
+    private void OpenSelectedBook(int indexBook)
+    {
+        Snackbar.Add($"Book {indexBook} is open", Severity.Success);
     }
 }
