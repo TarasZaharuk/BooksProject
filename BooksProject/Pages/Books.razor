@@ -7,6 +7,8 @@
 @using System.Globalization
 @using MudBlazor.Dialog
 @inject ISnackbar Snackbar
+@inject StateContainerService stateService
+@inject NavigationManager navigationManager
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
@@ -225,8 +227,19 @@
         }
     }
 
-    private void OpenSelectedBook(int indexBook)
+    void OpenSelectedBook(int indexBook)
     {
-        Snackbar.Add($"Book {indexBook} is open", Severity.Success);
+        stateService.SetValue(_books[indexBook]);
+        navigationManager.NavigateTo($"/books/{indexBook}");
+    }
+
+    protected override void OnInitialized()
+    {
+        stateService.OnStateChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        stateService.OnStateChange -= StateHasChanged;
     }
 }
