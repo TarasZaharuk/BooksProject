@@ -15,7 +15,7 @@ namespace BooksWebApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddTransient<IBooksRepository, InMemoryBooksRepository>();
+            builder.Services.AddTransient<IBooksRepository, InMemoryBooksRepository>(); //
 
             var app = builder.Build();
 
