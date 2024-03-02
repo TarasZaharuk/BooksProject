@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Data.Common;
-using OdataToEntity;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BooksProject.Shared
 {
-    public class BookDetailsDto
+    public class BookAddModelDto
     {
-        public int Id { get; set; }
-
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
 
@@ -16,5 +16,6 @@ namespace BooksProject.Shared
         public DateTime DateOfPublishing { get; set; }
 
         public int Rating { get; set; }
+
     }
 }
