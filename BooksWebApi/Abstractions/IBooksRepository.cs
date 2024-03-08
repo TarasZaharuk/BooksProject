@@ -12,5 +12,6 @@ namespace BooksWebApi.Abstractions
         void DeleteAll();
 
         int AddBook(BookAddModelDto book);
+
     }
 }

@@ -26,9 +26,10 @@ namespace BooksProject
                 config.SnackbarConfiguration.ShowTransitionDuration = 500;
                 config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
             });
-            builder.Services.AddSingleton<StateContainerService>();
+
             builder.Services.AddMudServices();
-            await builder.Build().RunAsync();
+            await builder.Build().RunAsync();    
         }
+
     }
 }

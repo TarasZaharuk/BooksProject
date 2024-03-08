@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/BooksProject/Pages/BookDetail.razor
+/BooksProject/StateContainerService.cs
+/BooksProject/Pages/BookDetail.razor

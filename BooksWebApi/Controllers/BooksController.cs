@@ -28,6 +28,15 @@ namespace BooksWebApi.Controllers
             return Ok(book);     
         }
 
+
+        [HttpGet("books")]
+        [ProducesResponseType<List<BookDetailsDto>>(StatusCodes.Status200OK)]
+        public IActionResult GetAll()
+        {
+            return Ok(_booksRepository.GetAll());
+        }
+
+
         [HttpPost("books")]
         [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
         public IActionResult AddBook(BookAddModelDto adedBook)
@@ -36,12 +45,15 @@ namespace BooksWebApi.Controllers
             return Ok(id);
         }
 
-        [HttpGet("books")]
-        [ProducesResponseType<List<BookDetailsDto>>(StatusCodes.Status200OK)]
-        public IActionResult GetAll()
+
+        [HttpPost("books/generate/list")]
+        [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
+        public IActionResult GenerateBooksList(int generateBoooksCount)
         {
-           return Ok(_booksRepository.GetAll());
+            int countOfBooks = BooksContainer.GenerateBooksList(generateBoooksCount);
+            return Ok(countOfBooks);
         }
+
 
         [HttpDelete("books/{id}")]
         [ProducesResponseType<BookDetailsDto>(StatusCodes.Status204NoContent)]
@@ -50,6 +62,7 @@ namespace BooksWebApi.Controllers
             _booksRepository.DeleteBook(id);
             return NoContent();
         }
+
 
         [HttpDelete("books")]
         [ProducesResponseType<BookDetailsDto>(StatusCodes.Status204NoContent)]

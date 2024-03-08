@@ -6,8 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="OdataToEntity.AspNetCore" Version="2.8.0" />
-  </ItemGroup>
-
+	
+	
 </Project>

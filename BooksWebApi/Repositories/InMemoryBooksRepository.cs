@@ -35,15 +35,21 @@ namespace BooksWebApi.Repositories
             var book = new BookDetailsDto();
             BooksContainer.InitializeId(book);
 
+            if (string.IsNullOrWhiteSpace(adedBook.Description))
+            {
+                adedBook.Description = $"{adedBook.Name}-{adedBook.Author}-{adedBook.DateOfPublishing.ToShortDateString()}";
+            }
                 book.Name = adedBook.Name;
                 book.Description = adedBook.Description;
                 book.Author = adedBook.Author;
-                book.DateOfPublishing = adedBook.DateOfPublishing;
+                book.DateOfPublishing = DateOnly.FromDateTime(adedBook.DateOfPublishing);
                 book.Rating = adedBook.Rating;
+                book.Status = Status.Draft;
 
             BooksContainer.Books.Add(book);
 
             return book.Id;
         }
+
     }
 }

@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{0B7497
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{29069133-D115-4E5C-9D3C-6695A68458E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooksWebApi", "BooksWebApi\BooksWebApi.csproj", "{D249B05D-37C5-47D5-9224-60BD58558E76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BooksWebApi", "BooksWebApi\BooksWebApi.csproj", "{D249B05D-37C5-47D5-9224-60BD58558E76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BooksProject.Shared", "BooksProject.Shared\BooksProject.Shared.csproj", "{3445A95A-C824-4000-AE50-09DB9D01E1E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BooksProject.Shared", "BooksProject.Shared\BooksProject.Shared.csproj", "{3445A95A-C824-4000-AE50-09DB9D01E1E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

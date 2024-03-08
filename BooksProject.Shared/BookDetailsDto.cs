@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.Common;
-using OdataToEntity;
 
 namespace BooksProject.Shared
 {
@@ -13,8 +12,11 @@ namespace BooksProject.Shared
 
         public string? Author { get; set; }
 
-        public DateTime DateOfPublishing { get; set; }
+        public DateOnly DateOfPublishing { get; set; }
 
         public int Rating { get; set; }
+
+        public Status Status { get; set; }
+
     }
 }
