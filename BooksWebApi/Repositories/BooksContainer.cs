@@ -5,7 +5,7 @@ namespace BooksWebApi.Repositories
 {
     public static class BooksContainer
     {
-        public static List<BookDetailsDto> Books = new List<BookDetailsDto>();
+      public static List<BookDetailsDto> Books = new List<BookDetailsDto>();
 
         private static List<string> _bookNames = new List<string>
         {
@@ -203,7 +203,7 @@ namespace BooksWebApi.Repositories
 
         public static void InitializeId(BookDetailsDto book)
         {
-            if (Books.Any())
+            if (Books.Any()) 
             {
                 book.Id = Books.Last().Id + 1;
             }
