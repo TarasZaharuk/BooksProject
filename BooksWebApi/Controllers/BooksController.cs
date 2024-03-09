@@ -30,10 +30,10 @@ namespace BooksWebApi.Controllers
 
 
         [HttpGet("books")]
-        [ProducesResponseType<List<BookDetailsDto>>(StatusCodes.Status200OK)]
-        public IActionResult GetAll()
+        [ProducesResponseType<GetBooksListModelDto>(StatusCodes.Status200OK)]
+        public IActionResult GetAll(int skipBooks, int takeBooks, bool sortAscending, bool sortDescending, string? searchBook)
         {
-            return Ok(_booksRepository.GetAll());
+            return Ok(_booksRepository.GetAll(skipBooks, takeBooks, sortAscending, sortDescending, searchBook));
         }
 
 

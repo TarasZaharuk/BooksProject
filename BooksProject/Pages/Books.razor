@@ -1,11 +1,13 @@
 ﻿@page "/"
 @inject IConfiguration Configuration
+@using System
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
 @using MudBlazor.Dialog
 @using Shared
 @inject ISnackbar Snackbar
+@inject HttpClient httpClient
 
 @inject NavigationManager navigationManager
 
@@ -13,8 +15,8 @@
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
-          @ref="table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="getBooksList.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
+          @ref="table" Height="75vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
         @if (!_isDialogVisible)
         {
@@ -33,7 +35,7 @@
         <MudTh>Date</MudTh>
         <MudTh>Status</MudTh>
         <MudTh><div class="ml-10">Rating</div></MudTh>
-        @if (_books.Count > 0)
+        @if (getBooksList.TotalCount > 0)
         {
             <MudTh><MudIconButton Disabled="_isDialogVisible" Class="ml-8" Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
         }
@@ -76,6 +78,10 @@
     </RowTemplate>
 </MudTable>
 
+<div class="d-flex flex-column align-center">
+    <MudPagination Size="Size.Large" ShowFirstButton="true" ShowLastButton="true" SelectedChanged=" selectedPage => SetSelectedIndexOfTablePage(selectedPage)" Count="GetCountOfTablePages()" />
+</div>
+
 <MudDialog @bind-IsVisible="_isDialogVisible">
     <DialogContent>
         <div class="d-flex flex-column">
@@ -99,7 +105,7 @@
 
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
-    private List<BookDetailsDto> _books = new List<BookDetailsDto>();
+    private GetBooksListModelDto getBooksList = new GetBooksListModelDto();
     private MudTable<BookDetailsDto> table = null!;
     private Random _random = new Random();
     private DateTime? _date = DateTime.Now;
@@ -108,30 +114,82 @@
     private string Author { get; set; } = null!;
     private string Description { get; set; } = null!;
     private bool _isDialogVisible;
-
+    private const int _countOfBooksPerPage = 20;
+    private int _indexOfSelectedTablePage;
+    private int _takeBooks = _countOfBooksPerPage;
     private string? _baseAddres;
-    private HttpClient httpClient = new HttpClient();
+
 
     private async Task<TableData<BookDetailsDto>> LoadData(TableState state)
     {
-        await LoadBooksFromServer();
-        IEnumerable<BookDetailsDto> data = _books;
-        await Task.Delay(300);
-        data = data.Where(element =>
+        if (state.SortLabel == "name_field")
         {
-            if (string.IsNullOrWhiteSpace(_searchString))
-                return true;
-            if (element.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            return false;
-        }).ToArray();
-        switch (state.SortLabel)
-        {
-            case "name_field":
-                data = data.OrderByDirection(state.SortDirection, o => o.Name);
-                break;
+            if (state.SortDirection == MudBlazor.SortDirection.Ascending)
+            {
+                if (string.IsNullOrWhiteSpace(_searchString))
+                {
+                    var sortedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&sortAscending=true");
+                    if (sortedBooks != null)
+                    {
+                        getBooksList.Books = sortedBooks.Books;
+                    }
+                }
+                else
+                {
+                    var sortedSearchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}&sortAscending=true");
+                    if (sortedSearchedBooks != null)
+                    {
+                        getBooksList.Books = sortedSearchedBooks.Books;
+                    }
+                }
+
+            }
+            else if (state.SortDirection == MudBlazor.SortDirection.Descending)
+            {
+                if (string.IsNullOrWhiteSpace(_searchString))
+                {
+                    var sortedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&sortDescending=true");
+                    if (sortedBooks != null)
+                    {
+                        getBooksList.Books = sortedBooks.Books;
+                    }
+                }
+                else
+                {
+                    var sortedSearchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}&sortDescending=true");
+                    if (sortedSearchedBooks != null)
+                    {
+                        getBooksList.Books = sortedSearchedBooks.Books;
+                    }
+                }
+
+            }
+
+            else if(!string.IsNullOrWhiteSpace(_searchString))
+            {
+                var searchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}");
+                if (searchedBooks != null)
+                {
+                    getBooksList.Books = searchedBooks.Books;
+                }
+            }
+
+            else
+            {
+                var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}");
+                if (books != null)
+                {
+                    getBooksList.Books = books.Books;
+                }
+            }
+
+            return new TableData<BookDetailsDto>() { Items = getBooksList.Books };
         }
-        return new TableData<BookDetailsDto>() { Items = data };
+
+
+        await LoadBooksFromServer(GetSkipBooksCount(), _countOfBooksPerPage);
+
+        return new TableData<BookDetailsDto>() { Items = getBooksList.Books };
     }
 
     private void OnSearch(string text)
@@ -142,7 +200,7 @@
 
     private async Task DeleteBook(int id)
     {
-        BookDetailsDto? book = _books.SingleOrDefault(book => book.Id == id);
+        BookDetailsDto? book = getBooksList.Books.SingleOrDefault(book => book.Id == id);
         if (book != null)
         {
             bool? result = await DialogService.ShowMessageBox(
@@ -162,7 +220,7 @@
     {
         bool? result = await DialogService.ShowMessageBox(
         "Warning",
-        $"Do you want to delete {_books.Count} books?",
+        $"Do you want to delete {getBooksList.TotalCount} books?",
         yesText: "Delete", cancelText: "Cancel");
 
         if (result == true)
@@ -241,16 +299,44 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBooksFromServer();
+        await LoadBooksFromServer(0, _takeBooks);
     }
 
-    protected async Task LoadBooksFromServer()
+    protected async Task LoadBooksFromServer(int skipBooks,int takeBooks)
     {
         _baseAddres = Configuration["BaseAddres"];
-        var books = await httpClient.GetFromJsonAsync<List<BookDetailsDto>>($"{_baseAddres}/books");
-        if (books != null)
+        if (string.IsNullOrWhiteSpace(_searchString))
         {
-            _books = books;
+            var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={skipBooks}&takeBooks={takeBooks}");
+            if (books != null)
+            {
+                getBooksList = books;
+            }
         }
+        else
+        {
+            var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={skipBooks}&takeBooks={takeBooks}&searchBook={_searchString}");
+            if (books != null)
+            {
+                getBooksList = books;
+            }
+        }
+
+    }
+
+    protected int GetCountOfTablePages()
+    {
+        return (int)Math.Ceiling((double)getBooksList.TotalCount / _countOfBooksPerPage);
+    }
+
+    protected async Task SetSelectedIndexOfTablePage(int index)
+    {
+        _indexOfSelectedTablePage = index;
+        await table.ReloadServerData();
+    }
+
+    protected int GetSkipBooksCount()
+    {
+        return (_indexOfSelectedTablePage - 1) * _countOfBooksPerPage;
     }
 }

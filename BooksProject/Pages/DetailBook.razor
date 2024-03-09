@@ -49,7 +49,7 @@
     {
         _baseAddres = Configuration["BaseAddres"];
 
-        var book = await httpClient.GetFromJsonAsync<BookDetailsDto?>($"{Configuration["BaseAddres"]}/books/{IndexOfBook}");
+        var book = await httpClient.GetFromJsonAsync<BookDetailsDto?>($"{_baseAddres}/books/{IndexOfBook}");
         if (book != null)
             _book = book;
 
