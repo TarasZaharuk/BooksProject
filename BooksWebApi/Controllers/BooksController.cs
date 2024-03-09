@@ -46,7 +46,7 @@ namespace BooksWebApi.Controllers
         }
 
 
-        [HttpPost("books/generate/list")]
+        [HttpPost("books/generate")]
         [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
         public IActionResult GenerateBooksList(int generateBoooksCount)
         {
