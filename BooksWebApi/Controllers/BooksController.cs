@@ -31,9 +31,9 @@ namespace BooksWebApi.Controllers
 
         [HttpGet("books")]
         [ProducesResponseType<GetBooksListModelDto>(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int skipBooks, int takeBooks, bool sortAscending, bool sortDescending, string? searchBook)
+        public IActionResult GetAll([FromQuery]GetListRequestDto getListRequest)
         {
-            return Ok(_booksRepository.GetAll(skipBooks, takeBooks, sortAscending, sortDescending, searchBook));
+            return Ok(_booksRepository.GetAll(getListRequest));
         }
 
 
@@ -48,9 +48,9 @@ namespace BooksWebApi.Controllers
 
         [HttpPost("books/generate")]
         [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
-        public IActionResult GenerateBooksList(int generateBoooksCount)
+        public IActionResult GenerateBooksList(int generateBooksCount)
         {
-            int countOfBooks = BooksContainer.GenerateBooksList(generateBoooksCount);
+            int countOfBooks = BooksContainer.GenerateBooksList(generateBooksCount);
             return Ok(countOfBooks);
         }
 

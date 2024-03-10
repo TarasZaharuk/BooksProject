@@ -10,92 +10,32 @@ namespace BooksWebApi.Repositories
     public class InMemoryBooksRepository : IBooksRepository
     {
 
-        public GetBooksListModelDto? GetAll(int skipBooks, int takeBooks, bool sortAscending, bool sortDescending, string? searchBook)
+        public GetBooksListModelDto GetAll(GetListRequestDto getListRequest)
         {
+
             GetBooksListModelDto getBooksList = new GetBooksListModelDto();
+            IEnumerable<BookDetailsDto> books = BooksContainer.Books;
 
-            if (sortAscending == false && sortDescending == false && string.IsNullOrWhiteSpace(searchBook))
+            if (getListRequest.SearchBooks != null)
             {
-                getBooksList.TotalCount = BooksContainer.Books.Count;
-                getBooksList.Books = BooksContainer.Books.Skip(skipBooks).Take(takeBooks);
-
-                return getBooksList;
+                books = books.Where(book => book.Name.Contains(getListRequest.SearchBooks)); 
             }
 
-            if (string.IsNullOrWhiteSpace(searchBook))
+            if (getListRequest.SortBooksCase == SortOrder.Ascending)
             {
-                if (sortAscending)
-                {
-                    IEnumerable<BookDetailsDto> sortedList = BooksContainer.Books.OrderBy(book => book.Name);
-                    getBooksList.TotalCount = sortedList.ToList().Count;
-                    getBooksList.Books = sortedList.Skip(skipBooks).Take(takeBooks);
-
-                    return getBooksList;
-                }
-
-                else if (sortDescending)
-                {
-                    IEnumerable<BookDetailsDto> sortedList = BooksContainer.Books.OrderByDescending(book => book.Name);
-                    getBooksList.TotalCount = sortedList.ToList().Count;
-                    getBooksList.Books = sortedList.Skip(skipBooks).Take(takeBooks);
-
-                    return getBooksList;
-                }
+                books = books.OrderBy(book => book.Name);
             }
 
-            else if (!string.IsNullOrWhiteSpace(searchBook) && sortAscending == false && sortDescending == false)
+            if (getListRequest.SortBooksCase == SortOrder.Descending)
             {
-                IEnumerable<BookDetailsDto> searchList = BooksContainer.Books;
-
-                searchList = searchList.Where(element =>
-                {
-                    if (element.Name.Contains(searchBook, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                    return false;
-                }).ToArray();
-                getBooksList.TotalCount = searchList.ToList().Count;
-                getBooksList.Books = searchList.Skip(skipBooks).Take(takeBooks);
-
-                return getBooksList;
+                books = books.OrderByDescending(book => book.Name);
             }
 
-            else if (!string.IsNullOrWhiteSpace(searchBook) && sortDescending)
-            {
-                IEnumerable<BookDetailsDto> searchList = BooksContainer.Books;
+            getBooksList.Books = books.Skip(getListRequest.SkipBooks).Take(getListRequest.TakeBooks);
+            getBooksList.TotalCount = books.Count();
 
-                searchList = searchList.Where(element =>
-                {
-                    if (element.Name.Contains(searchBook, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                    return false;
-                }).ToArray();
-                getBooksList.TotalCount = searchList.ToList().Count;
-                IEnumerable<BookDetailsDto> sortedSearchedList = searchList.OrderByDescending(book => book.Name);
 
-                getBooksList.Books = sortedSearchedList.Skip(skipBooks).Take(takeBooks);
-
-                return getBooksList;
-            }
-
-            else if (!string.IsNullOrWhiteSpace(searchBook) && sortAscending)
-            {
-                IEnumerable<BookDetailsDto> searchList = BooksContainer.Books;
-
-                searchList = searchList.Where(element =>
-                {
-                    if (element.Name.Contains(searchBook, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                    return false;
-                }).ToArray();
-                getBooksList.TotalCount = searchList.ToList().Count;
-                IEnumerable<BookDetailsDto> sortedSearchedList = searchList.OrderBy(book => book.Name);
-
-                getBooksList.Books = sortedSearchedList.Skip(skipBooks).Take(takeBooks);
-
-                return getBooksList;
-            }
-
-            return null;
+            return getBooksList;
         }
 
         public BookDetailsDto? GetById(int id)

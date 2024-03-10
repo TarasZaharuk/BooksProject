@@ -15,8 +15,8 @@
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="getBooksList.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
-          @ref="table" Height="75vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_getBooksList.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
+          @ref="_table" Height="75vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
         @if (!_isDialogVisible)
         {
@@ -35,18 +35,18 @@
         <MudTh>Date</MudTh>
         <MudTh>Status</MudTh>
         <MudTh><div class="ml-10">Rating</div></MudTh>
-        @if (getBooksList.TotalCount > 0)
+        @if (_getBooksList.TotalCount > 0)
         {
             <MudTh><MudIconButton Disabled="_isDialogVisible" Class="ml-8" Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
         }
     </HeaderContent>
     <RowTemplate>
-            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Id</MudTd>
+        <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Id</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Name</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Author</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Description</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.DateOfPublishing.ToShortDateString()</MudTd>
-        @if (context.Status == Status.Draft)
+            @if (context.Status == Status.Draft)
         {
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))"><MudImage Class="ml-3" Src="draftImage.png" Width="20" Height="20" /></MudTd>
         }
@@ -60,7 +60,7 @@
         </MudTd>
 
         <MudTd>
-            <MudFileUpload T="IBrowserFile"  Context="contextFile" Accept=".txt">
+            <MudFileUpload T="IBrowserFile" Context="contextFile" Accept=".txt">
                 <ButtonTemplate>
                     <MudButtonGroup Variant="Variant.Outlined">
                         <MudIconButton DisableRipple="true" HtmlTag="label" Color="Color.Success"
@@ -105,8 +105,8 @@
 
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
-    private GetBooksListModelDto getBooksList = new GetBooksListModelDto();
-    private MudTable<BookDetailsDto> table = null!;
+    private GetBooksListModelDto _getBooksList = new GetBooksListModelDto();
+    private MudTable<BookDetailsDto> _table = null!;
     private Random _random = new Random();
     private DateTime? _date = DateTime.Now;
     private string? _searchString;
@@ -118,7 +118,7 @@
     private int _indexOfSelectedTablePage;
     private int _takeBooks = _countOfBooksPerPage;
     private string? _baseAddres;
-
+    private SortOrder _sortBooksCase;
 
     private async Task<TableData<BookDetailsDto>> LoadData(TableState state)
     {
@@ -126,81 +126,28 @@
         {
             if (state.SortDirection == MudBlazor.SortDirection.Ascending)
             {
-                if (string.IsNullOrWhiteSpace(_searchString))
-                {
-                    var sortedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&sortAscending=true");
-                    if (sortedBooks != null)
-                    {
-                        getBooksList.Books = sortedBooks.Books;
-                    }
-                }
-                else
-                {
-                    var sortedSearchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}&sortAscending=true");
-                    if (sortedSearchedBooks != null)
-                    {
-                        getBooksList.Books = sortedSearchedBooks.Books;
-                    }
-                }
-
+                _sortBooksCase = SortOrder.Ascending;
             }
             else if (state.SortDirection == MudBlazor.SortDirection.Descending)
             {
-                if (string.IsNullOrWhiteSpace(_searchString))
-                {
-                    var sortedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&sortDescending=true");
-                    if (sortedBooks != null)
-                    {
-                        getBooksList.Books = sortedBooks.Books;
-                    }
-                }
-                else
-                {
-                    var sortedSearchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}&sortDescending=true");
-                    if (sortedSearchedBooks != null)
-                    {
-                        getBooksList.Books = sortedSearchedBooks.Books;
-                    }
-                }
-
+                _sortBooksCase = SortOrder.Descending;
             }
-
-            else if(!string.IsNullOrWhiteSpace(_searchString))
-            {
-                var searchedBooks = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}&searchBook={_searchString}");
-                if (searchedBooks != null)
-                {
-                    getBooksList.Books = searchedBooks.Books;
-                }
-            }
-
-            else
-            {
-                var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={GetSkipBooksCount()}&takeBooks={_takeBooks}");
-                if (books != null)
-                {
-                    getBooksList.Books = books.Books;
-                }
-            }
-
-            return new TableData<BookDetailsDto>() { Items = getBooksList.Books };
         }
 
-
-        await LoadBooksFromServer(GetSkipBooksCount(), _countOfBooksPerPage);
-
-        return new TableData<BookDetailsDto>() { Items = getBooksList.Books };
+        await LoadBooksFromServer();
+        StateHasChanged();
+        return new TableData<BookDetailsDto>() { Items = _getBooksList.Books };
     }
 
     private void OnSearch(string text)
     {
         _searchString = text;
-        table.ReloadServerData();
+        _table.ReloadServerData();
     }
 
     private async Task DeleteBook(int id)
     {
-        BookDetailsDto? book = getBooksList.Books.SingleOrDefault(book => book.Id == id);
+        BookDetailsDto? book = _getBooksList.Books.SingleOrDefault(book => book.Id == id);
         if (book != null)
         {
             bool? result = await DialogService.ShowMessageBox(
@@ -210,7 +157,7 @@
             if (result == true)
             {
                 await httpClient.DeleteAsync($"{_baseAddres}/books/{id}");
-                await table.ReloadServerData();
+                await _table.ReloadServerData();
             }
         }
 
@@ -220,13 +167,13 @@
     {
         bool? result = await DialogService.ShowMessageBox(
         "Warning",
-        $"Do you want to delete {getBooksList.TotalCount} books?",
+        $"Do you want to delete {_getBooksList.TotalCount} books?",
         yesText: "Delete", cancelText: "Cancel");
 
         if (result == true)
         {
             await httpClient.DeleteAsync($"{_baseAddres}/books");
-            await table.ReloadServerData();
+            await _table.ReloadServerData();
         }
     }
 
@@ -244,7 +191,7 @@
 
             await httpClient.PostAsJsonAsync($"{_baseAddres}/books", book);
 
-            await table.ReloadServerData();
+            await _table.ReloadServerData();
             CloseDialog();
         }
     }
@@ -270,73 +217,47 @@
         Description = string.Empty;
     }
 
-    // private async Task UploadFile(InputFileChangeEventArgs inputFile, int bookIndex)
-    // {
-    //     if (inputFile.File.ContentType.StartsWith("text"))
-    //     {
-    //         BookLoadTextModeDto bookWithTextOnly = new BookLoadTextModeDto();
-    //         var buffer = new byte[inputFile.File.Size];
-    //         await inputFile.File.OpenReadStream().ReadAsync(buffer);
-    //         string textFromFile = System.Text.Encoding.UTF8.GetString(buffer);
-
-    //         bookWithTextOnly.Text = textFromFile;
-    //         await httpClient.PostAsJsonAsync($"https://localhost:7106/api/books/{bookIndex}/text", bookWithTextOnly);
-
-    //         Snackbar.Add($"text loaded", Severity.Success);
-    //         await table.ReloadServerData();
-    //     }
-    //     else
-    //     {
-    //         Snackbar.Add("File format not supported", Severity.Error);
-    //     }
-    // }
-
-    void OpenSelectedBook(int indexBook)
+    void OpenSelectedBook(int BookId)
     {
-
-        navigationManager.NavigateTo($"/books/{indexBook}");
+        navigationManager.NavigateTo($"/books/{BookId}");
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadBooksFromServer(0, _takeBooks);
-    }
-
-    protected async Task LoadBooksFromServer(int skipBooks,int takeBooks)
+    protected async Task LoadBooksFromServer()
     {
         _baseAddres = Configuration["BaseAddres"];
-        if (string.IsNullOrWhiteSpace(_searchString))
+        string queryString = GetQueryString.ToQueryString(GetListRequest());
+        var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?{queryString}");
+        if (books != null)
         {
-            var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={skipBooks}&takeBooks={takeBooks}");
-            if (books != null)
-            {
-                getBooksList = books;
-            }
+            _getBooksList = books;
         }
-        else
-        {
-            var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?skipBooks={skipBooks}&takeBooks={takeBooks}&searchBook={_searchString}");
-            if (books != null)
-            {
-                getBooksList = books;
-            }
-        }
-
     }
 
     protected int GetCountOfTablePages()
     {
-        return (int)Math.Ceiling((double)getBooksList.TotalCount / _countOfBooksPerPage);
+        return (int)Math.Ceiling((double)_getBooksList.TotalCount / _countOfBooksPerPage);
     }
 
     protected async Task SetSelectedIndexOfTablePage(int index)
     {
         _indexOfSelectedTablePage = index;
-        await table.ReloadServerData();
+        await _table.ReloadServerData();
     }
 
     protected int GetSkipBooksCount()
     {
         return (_indexOfSelectedTablePage - 1) * _countOfBooksPerPage;
+    }
+
+    protected GetListRequestDto GetListRequest()
+    {
+        GetListRequestDto getListRequest = new GetListRequestDto();
+
+        getListRequest.SortBooksCase = _sortBooksCase;
+        getListRequest.SearchBooks = _searchString;
+        getListRequest.SkipBooks = GetSkipBooksCount();
+        getListRequest.TakeBooks = _takeBooks;
+
+        return getListRequest;
     }
 }

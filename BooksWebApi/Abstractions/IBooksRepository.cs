@@ -6,7 +6,7 @@ namespace BooksWebApi.Abstractions
     {
         BookDetailsDto? GetById(int id);
 
-        GetBooksListModelDto? GetAll(int skipBooks, int takeBooks, bool UpperCaseSort, bool LowerCaseSort, string? searchBook);
+        GetBooksListModelDto GetAll(GetListRequestDto getListRequest);
 
         void DeleteBook(int id);
 
