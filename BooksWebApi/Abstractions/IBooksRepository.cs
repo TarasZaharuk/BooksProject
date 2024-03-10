@@ -5,7 +5,6 @@ namespace BooksWebApi.Abstractions
     public interface IBooksRepository
     {
         BookDetailsDto? GetById(int id);
-
         List<BookDetailsDto> GetAll();
 
         void DeleteBook(int id);
@@ -13,6 +12,5 @@ namespace BooksWebApi.Abstractions
         void DeleteAll();
 
         int AddBook(BookAddModelDto book);
-
     }
 }

@@ -64,12 +64,7 @@ namespace BooksWebApi.Controllers
         }
 
 
-        [HttpDelete("books")]
-        [ProducesResponseType<BookDetailsDto>(StatusCodes.Status204NoContent)]
-        public IActionResult DeleteAll()
-        {
-            _booksRepository.DeleteAll();
-            return NoContent();
+            return Ok(book);
         }
     }
 }

@@ -8,9 +8,7 @@ namespace BooksProject.Shared
 {
     public class BookAddModelDto
     {
-
         public string Name { get; set; } = null!;
-
         public string? Description { get; set; }
 
         public string? Author { get; set; }
