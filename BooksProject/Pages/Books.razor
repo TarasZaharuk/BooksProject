@@ -41,12 +41,12 @@
         }
     </HeaderContent>
     <RowTemplate>
-        <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Id</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Id</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Name</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Author</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Description</MudTd>
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.DateOfPublishing.ToShortDateString()</MudTd>
-            @if (context.Status == Status.Draft)
+        @if (context.Status == Status.Draft)
         {
             <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))"><MudImage Class="ml-3" Src="draftImage.png" Width="20" Height="20" /></MudTd>
         }

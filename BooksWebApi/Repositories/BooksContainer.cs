@@ -98,7 +98,7 @@ namespace BooksWebApi.Repositories
             "The Whisperer in Darkness",
             "The Dreams in the Witch House",
             "The Haunter of the Dark",
-            // Add more book names as needed
+
         };
         private static List<string> _authors = new List<string>
         {
@@ -198,7 +198,7 @@ namespace BooksWebApi.Repositories
             "Virginia Woolf",
             "Aldous Huxley",
             "Haruki Murakami",
-            // Add more authors as needed
+
         };
 
         public static void InitializeId(BookDetailsDto book)
