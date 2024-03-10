@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,10 +11,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
     <PackageReference Include="MudBlazor" Version="6.15.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BookCore\BookCore.csproj" />
+    <ProjectReference Include="..\BooksProject.Shared\BooksProject.Shared.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

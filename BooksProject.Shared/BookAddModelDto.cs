@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Data.Common;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BooksProject.Shared
 {
-    public class BookDetailsDto
+    public class BookAddModelDto
     {
-
-        public int Id { get; set; }
 
         public string Name { get; set; } = null!;
 
@@ -14,11 +15,9 @@ namespace BooksProject.Shared
 
         public string? Author { get; set; }
 
-        public DateOnly DateOfPublishing { get; set; }
+        public DateTime DateOfPublishing { get; set; }
 
         public int Rating { get; set; }
-
-        public Status Status { get; set; }
 
     }
 }

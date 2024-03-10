@@ -1,19 +1,21 @@
 ﻿@page "/"
-@inject HttpClient Http
-@inject HttpClient httpClient
-@using BookCore
+@inject IConfiguration Configuration
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
 @using MudBlazor.Dialog
+@using Shared
 @inject ISnackbar Snackbar
-@inject StateContainerService stateService
+@inject HttpClient httpClient
+
 @inject NavigationManager navigationManager
+
+
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="data" ServerData="@(new Func<TableState, Task<TableData<Book>>>(LoadData))"
-          @ref="table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
+          @ref="_table" Height="80vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
         @if (!_isDialogVisible)
         {
@@ -25,14 +27,8 @@
         }
     </ToolBarContent>
     <HeaderContent>
-        @if (_isDialogVisible)
-        {
-            <MudTh>Name</MudTh>
-        }
-        else
-        {
-            <MudTh><MudTableSortLabel SortLabel="name_field" T="Book">Name</MudTableSortLabel></MudTh>
-        }
+        <MudTh>Id</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="name_field" T="BookDetailsDto">Name</MudTableSortLabel></MudTh>
         <MudTh>Author</MudTh>
         <MudTh>Description</MudTh>
         <MudTh>Date</MudTh>
@@ -44,39 +40,40 @@
         }
     </HeaderContent>
     <RowTemplate>
-            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.Name</MudTd>
-            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.Author</MudTd>
-            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.GetInfo()</MudTd>
-            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">@context.DateOfPublishing</MudTd>
-            @if (context.Status == Status.Draft)
-            {
-                <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))"><MudImage Class="ml-3" Src="draftImage.png" Width="20" Height="20" /></MudTd>
-            }
-            @if (context.Status == Status.Active)
-            {
-                <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))"><MudImage Class="ml-3" Src="activeImage.png" Width="20" Height="20" /></MudTd>
-            }
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Id</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Name</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Author</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.Description</MudTd>
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">@context.DateOfPublishing.ToShortDateString()</MudTd>
+        @if (context.Status == Status.Draft)
+        {
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))"><MudImage Class="ml-3" Src="draftImage.png" Width="20" Height="20" /></MudTd>
+        }
+        @if (context.Status == Status.Active)
+        {
+            <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))"><MudImage Class="ml-3" Src="activeImage.png" Width="20" Height="20" /></MudTd>
+        }
 
-            <MudTd @onclick="@(()=>OpenSelectedBook(_books.IndexOf(context)))">
-                <MudRating DisableRipple="_isDialogVisible" Disabled="true" @bind-SelectedValue="context.Rating" />
-            </MudTd>
+        <MudTd @onclick="@(()=>OpenSelectedBook(context.Id))">
+            <MudRating DisableRipple="_isDialogVisible" Disabled="true" @bind-SelectedValue="context.Rating" />
+        </MudTd>
 
-            <MudTd>
-                <MudFileUpload T="IBrowserFile" OnFilesChanged="(args)=>UploadFile(args , _books.IndexOf(context))" Context="contextFile" Accept=".txt">
-                    <ButtonTemplate>
-                        <MudButtonGroup Variant="Variant.Outlined">
-                            <MudIconButton DisableRipple="true" HtmlTag="label" Color="Color.Success"
-                                           Variant="Variant.Text"
-                                           Size="Size.Small"
-                                           for="@contextFile.Id" Disabled="@(_isDialogVisible)">
-                                Load text
-                            </MudIconButton>
-                            <MudIconButton DisableRipple="_isDialogVisible" Icon="@Icons.Material.Filled.Delete" Disabled="@(_isDialogVisible)" aria-label="delete" OnClick="()=>DeleteBook(_books.IndexOf(context))"></MudIconButton>
-                        </MudButtonGroup>
+        <MudTd>
+            <MudFileUpload T="IBrowserFile"  Context="contextFile" Accept=".txt">
+                <ButtonTemplate>
+                    <MudButtonGroup Variant="Variant.Outlined">
+                        <MudIconButton DisableRipple="true" HtmlTag="label" Color="Color.Success"
+                                       Variant="Variant.Text"
+                                       Size="Size.Small"
+                                       for="@contextFile.Id" Disabled="@(_isDialogVisible)">
+                            Load text
+                        </MudIconButton>
+                        <MudIconButton DisableRipple="_isDialogVisible" Icon="@Icons.Material.Filled.Delete" Disabled="@(_isDialogVisible)" OnClick="()=>DeleteBook(context.Id)"></MudIconButton>
+                    </MudButtonGroup>
 
-                    </ButtonTemplate>
-                </MudFileUpload>
-            </MudTd>
+                </ButtonTemplate>
+            </MudFileUpload>
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
@@ -98,13 +95,13 @@
     </DialogContent>
 </MudDialog>
 
+
 @code {
 
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
-    private IEnumerable<Book> data = null!;
-    private List<Book> _books = new List<Book>();
-    private MudTable<Book> table = null!;
+    private List<BookDetailsDto> _books = new List<BookDetailsDto>();
+    private MudTable<BookDetailsDto> _table = null!;
     private Random _random = new Random();
     private DateTime? _date = DateTime.Now;
     private string? _searchString;
@@ -113,20 +110,12 @@
     private string Description { get; set; } = null!;
     private bool _isDialogVisible;
 
-    public Books()
-    {
-        for (int i = 0; i < 50; i++)
-        {
-            _books.Add(new Book($"AName{i}", $"Author{i}", DateOnly.FromDateTime(DateTime.Now)));
-            _books[i].Rating = _random.Next(1, 6);
-        }
+    private string? _baseAddres;
 
-        data = _books;
-    }
-
-    private async Task<TableData<Book>> LoadData(TableState state)
+    private async Task<TableData<BookDetailsDto>> LoadData(TableState state)
     {
-        IEnumerable<Book> data = _books;
+        await LoadBooksFromServer();
+        IEnumerable<BookDetailsDto> data = _books;
         await Task.Delay(300);
         data = data.Where(element =>
         {
@@ -142,26 +131,31 @@
                 data = data.OrderByDirection(state.SortDirection, o => o.Name);
                 break;
         }
-        return new TableData<Book>() { Items = data };
+        return new TableData<BookDetailsDto>() { Items = data };
     }
 
     private void OnSearch(string text)
     {
         _searchString = text;
-        table.ReloadServerData();
+        _table.ReloadServerData();
     }
 
-    private async Task DeleteBook(int index)
+    private async Task DeleteBook(int id)
     {
-        bool? result = await DialogService.ShowMessageBox(
-        "Warning",
-        $"Do you want to delete '{_books[index].Name}' book?",
-        yesText: "Delete", cancelText: "Cancel");
-        if (result == true)
+        BookDetailsDto? book = _books.SingleOrDefault(book => book.Id == id);
+        if (book != null)
         {
-            _books.RemoveAt(index);
-            await table.ReloadServerData();
+            bool? result = await DialogService.ShowMessageBox(
+        "Warning",
+        $"Do you want to delete '{book.Name}' book?",
+        yesText: "Delete", cancelText: "Cancel");
+            if (result == true)
+            {
+                await httpClient.DeleteAsync($"{_baseAddres}/books/{id}");
+                await _table.ReloadServerData();
+            }
         }
+
     }
 
     private async Task Delete()
@@ -173,8 +167,8 @@
 
         if (result == true)
         {
-            _books.Clear();
-            await table.ReloadServerData();
+            await httpClient.DeleteAsync($"{_baseAddres}/books");
+            await _table.ReloadServerData();
         }
     }
 
@@ -182,11 +176,17 @@
     {
         if (_date.HasValue)
         {
-            Book book = new Book(Name, Author, DateOnly.FromDateTime(_date.Value));
+            BookAddModelDto book = new BookAddModelDto();
+
             book.Rating = _random.Next(1, 6);
             book.Description = Description;
-            _books.Add(book);
-            await table.ReloadServerData();
+            book.Name = Name;
+            book.Author = Author;
+            book.DateOfPublishing = _date.Value;
+
+            await httpClient.PostAsJsonAsync($"{_baseAddres}/books", book);
+
+            await _table.ReloadServerData();
             CloseDialog();
         }
     }
@@ -212,34 +212,45 @@
         Description = string.Empty;
     }
 
-    private async Task UploadFile(InputFileChangeEventArgs inputFile, int bookIndex)
+    // private async Task UploadFile(InputFileChangeEventArgs inputFile, int bookIndex)
+    // {
+    //     if (inputFile.File.ContentType.StartsWith("text"))
+    //     {
+    //         BookLoadTextModeDto bookWithTextOnly = new BookLoadTextModeDto();
+    //         var buffer = new byte[inputFile.File.Size];
+    //         await inputFile.File.OpenReadStream().ReadAsync(buffer);
+    //         string textFromFile = System.Text.Encoding.UTF8.GetString(buffer);
+
+    //         bookWithTextOnly.Text = textFromFile;
+    //         await httpClient.PostAsJsonAsync($"https://localhost:7106/api/books/{bookIndex}/text", bookWithTextOnly);
+
+    //         Snackbar.Add($"text loaded", Severity.Success);
+    //         await table.ReloadServerData();
+    //     }
+    //     else
+    //     {
+    //         Snackbar.Add("File format not supported", Severity.Error);
+    //     }
+    // }
+
+    void OpenSelectedBook(int BookId)
     {
-        if (inputFile.File.ContentType.StartsWith("text"))
+
+        navigationManager.NavigateTo($"/books/{BookId}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooksFromServer();
+    }
+
+    protected async Task LoadBooksFromServer()
+    {
+        _baseAddres = Configuration["BaseAddres"];
+        var books = await httpClient.GetFromJsonAsync<List<BookDetailsDto>>($"{_baseAddres}/books");
+        if (books != null)
         {
-            var buffer = new byte[inputFile.File.Size];
-            await inputFile.File.OpenReadStream().ReadAsync(buffer);
-            _books[bookIndex].LoadText(System.Text.Encoding.UTF8.GetString(buffer));
-            Snackbar.Add($"text loaded in '{_books[bookIndex].Name}' book, pages count:{_books[bookIndex].CountOfPages}", Severity.Success);
+            _books = books;
         }
-        else
-        {
-            Snackbar.Add("File format not supported", Severity.Error);
-        }
-    }
-
-    void OpenSelectedBook(int indexBook)
-    {
-        stateService.SetValue(_books[indexBook]);
-        navigationManager.NavigateTo($"/books/{indexBook}");
-    }
-
-    protected override void OnInitialized()
-    {
-        stateService.OnStateChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        stateService.OnStateChange -= StateHasChanged;
     }
 }

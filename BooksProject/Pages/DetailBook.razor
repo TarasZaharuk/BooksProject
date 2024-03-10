@@ -1,0 +1,58 @@
+﻿@page "/books/{BookId:int}"
+@inject IConfiguration Configuration
+@using Shared
+@inject HttpClient httpClient
+<h4>
+    @_book.Name
+</h4>
+<div class="d-flex">
+    <MudForm Style="width:800px">
+        <MudTextField FullWidth="true" Class="ml-1" T="string" Label="Name" Text="@_book.Name" Required="true" ReadOnly="true" RequiredError="Name is required!" />
+        <MudTextField FullWidth="true" Class="ml-1" T="string" Label="Author" Text="@_book.Author" Required="true" ReadOnly="true" RequiredError="Author is required!" />
+        <MudDatePicker Class="ml-1" Label="Date of publishing" PickerVariant="PickerVariant.Dialog" ReadOnly="true" Text="@_book.DateOfPublishing.ToShortDateString()" MaxDate="DateTime.Now"></MudDatePicker>
+        @if (_book.Status == Status.Draft)
+        {
+            <MudTextField Class="pa-2" T="string" Label="Status" Text="Draft" Required="true" ReadOnly="true" />
+        }
+        @if (_book.Status == Status.Active)
+        {
+            <MudTextField Class="pa-2" T="string" Label="Status" Text="Active" Required="true" ReadOnly="true" />
+        }
+
+    </MudForm>
+
+    <MudTextField Label="Description" Class="ml-3" Style="height:100%" Lines="10" T="string" FullWidth="true" ReadOnly="true" Text="@_book.Description">@("Description")</MudTextField>
+</div>
+
+<MudInputLabel Class="ml-1" Disabled="true">
+    Rating
+</MudInputLabel>
+<div class="d-flex align-center justify-space-between pa-1">
+    <MudRating Class="align-content-center" Disabled="true" @bind-SelectedValue="_book.Rating" />
+</div>
+
+@* @if (_book.Status == Status.Active)
+{
+    <MudTextField ReadOnly="true" Class="pa-1" T="string" Variant="Variant.Outlined" Text="@GetTextOfSelectedPage()" Lines="18" FullWidth="true" />
+    <div class="d-flex flex-column align-center">
+        <MudPagination Size="Size.Large" ShowFirstButton="true" ShowLastButton="true" Count="_book.CountOfPages" @bind-Selected="_indexOfPage" />
+    </div>
+} *@
+
+@code {
+    [Parameter]
+    public int BookId { get; set; } = 1;
+    private BookDetailsDto _book = new BookDetailsDto();
+    private string? _baseAddres;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _baseAddres = Configuration["BaseAddres"];
+
+        var book = await httpClient.GetFromJsonAsync<BookDetailsDto?>($"{Configuration["BaseAddres"]}/books/{BookId}");
+        if (book != null)
+            _book = book;
+
+    }
+
+}
