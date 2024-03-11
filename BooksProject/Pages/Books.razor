@@ -15,7 +15,7 @@
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_getBooksList.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_booksListResponse.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
           @ref="_table" Height="75vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
         @if (!_isDialogVisible)
@@ -35,7 +35,7 @@
         <MudTh>Date</MudTh>
         <MudTh>Status</MudTh>
         <MudTh><div class="ml-10">Rating</div></MudTh>
-        @if (_getBooksList.TotalCount > 0)
+        @if (_booksListResponse.TotalCount > 0)
         {
             <MudTh><MudIconButton Disabled="_isDialogVisible" Class="ml-8" Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="Delete"></MudIconButton></MudTh>
         }
@@ -105,7 +105,7 @@
 
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
-    private GetBooksListModelDto _getBooksList = new GetBooksListModelDto();
+    private GetBooksListModelDto _booksListResponse = new GetBooksListModelDto();
     private MudTable<BookDetailsDto> _table = null!;
     private Random _random = new Random();
     private DateTime? _date = DateTime.Now;
@@ -136,7 +136,7 @@
 
         await LoadBooksFromServer();
         StateHasChanged();
-        return new TableData<BookDetailsDto>() { Items = _getBooksList.Books };
+        return new TableData<BookDetailsDto>() { Items = _booksListResponse.Books };
     }
 
     private void OnSearch(string text)
@@ -147,7 +147,7 @@
 
     private async Task DeleteBook(int id)
     {
-        BookDetailsDto? book = _getBooksList.Books.SingleOrDefault(book => book.Id == id);
+        BookDetailsDto? book = _booksListResponse.Books.SingleOrDefault(book => book.Id == id);
         if (book != null)
         {
             bool? result = await DialogService.ShowMessageBox(
@@ -167,7 +167,7 @@
     {
         bool? result = await DialogService.ShowMessageBox(
         "Warning",
-        $"Do you want to delete {_getBooksList.TotalCount} books?",
+        $"Do you want to delete {_booksListResponse.TotalCount} books?",
         yesText: "Delete", cancelText: "Cancel");
 
         if (result == true)
@@ -225,17 +225,17 @@
     protected async Task LoadBooksFromServer()
     {
         _baseAddres = Configuration["BaseAddres"];
-        string queryString = GetQueryString.ToQueryString(GetListRequest());
+        string queryString = QueryStringBuilder.ToQueryString(GetListRequest());
         var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?{queryString}");
         if (books != null)
         {
-            _getBooksList = books;
+            _booksListResponse = books;
         }
     }
 
     protected int GetCountOfTablePages()
     {
-        return (int)Math.Ceiling((double)_getBooksList.TotalCount / _countOfBooksPerPage);
+        return (int)Math.Ceiling((double)_booksListResponse.TotalCount / _countOfBooksPerPage);
     }
 
     protected async Task SetSelectedIndexOfTablePage(int index)
@@ -253,7 +253,7 @@
     {
         GetListRequestDto getListRequest = new GetListRequestDto();
 
-        getListRequest.SortBooksCase = _sortBooksCase;
+        getListRequest.NameSortOrder = _sortBooksCase;
         getListRequest.SearchBooks = _searchString;
         getListRequest.SkipBooks = GetSkipBooksCount();
         getListRequest.TakeBooks = _takeBooks;

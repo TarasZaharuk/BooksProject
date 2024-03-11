@@ -21,12 +21,12 @@ namespace BooksWebApi.Repositories
                 books = books.Where(book => book.Name.Contains(getListRequest.SearchBooks)); 
             }
 
-            if (getListRequest.SortBooksCase == SortOrder.Ascending)
+            if (getListRequest.NameSortOrder == SortOrder.Ascending)
             {
                 books = books.OrderBy(book => book.Name);
             }
 
-            if (getListRequest.SortBooksCase == SortOrder.Descending)
+            if (getListRequest.NameSortOrder == SortOrder.Descending)
             {
                 books = books.OrderByDescending(book => book.Name);
             }

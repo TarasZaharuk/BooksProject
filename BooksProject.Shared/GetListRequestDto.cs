@@ -8,7 +8,7 @@ namespace BooksProject.Shared
 {
     public class GetListRequestDto
     {
-        public SortOrder SortBooksCase { get; set; }
+        public SortOrder NameSortOrder { get; set; }
 
         public string? SearchBooks { get; set; }
 

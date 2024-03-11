@@ -3,7 +3,7 @@ using System.Web;
 
 namespace BooksProject
 {
-    public static class GetQueryString
+    public static class QueryStringBuilder
     {
         public static string ToQueryString(object obj)
         {
