@@ -1,13 +1,14 @@
 ﻿using BooksProject.Shared;
-using Microsoft.Extensions.FileSystemGlobbing;
+using DBMeneger;
+using BooksWebApi.Repositories;
 
-namespace BooksWebApi.Repositories
+namespace BooksWebApi
 {
-    public static class BooksContainer
+    public class BooksGenerator
     {
-      public static List<BookDetailsDto> Books = [];
-
-        private static readonly List<string> _bookNames = new List<string>
+        private static DataBaseManipulator _dbManipulator = new();
+        private static List<BookDetailsDto>? Books = [];
+        private static List<string> _bookNames = new List<string>
         {
             "The Shadow of the Wind",
             "The Great Gatsby",
@@ -100,7 +101,7 @@ namespace BooksWebApi.Repositories
             "The Haunter of the Dark",
 
         };
-        private static readonly List<string> _authors = new List<string>
+        private static List<string> _authors = new List<string>
         {
             "Jane Austen",
             "Fyodor Dostoevsky",
@@ -200,35 +201,32 @@ namespace BooksWebApi.Repositories
             "Haruki Murakami",
 
         };
-
-        public static void InitializeId(BookDetailsDto book)
+        public static List<BookDetailsDto>? GenerateBooksList(int generateBoooksCount)
         {
-            if (Books.Count != 0) 
-            {
-                book.Id = Books.Last().Id + 1;
-            }
-            else
-            {
-                book.Id = 1;
-            }
-        }
-
-        public static int GenerateBooksList(int generateBoooksCount)
-        {
-            Random random = new();
+            Books = [];
+            int lastId = MetaDataManeger.GetLastId();
+            Random random = new Random();
             for (int i = 0; i < generateBoooksCount; i++)
             {
-                BookDetailsDto book = new();
-                book.Name = _bookNames[random.Next(0,_bookNames.Count)];
-                book.Author = _authors[random.Next(0, _authors.Count)];
-                book.Description = $"Description{i}";
-                book.DateOfPublishing = DateOnly.FromDateTime(DateTime.Now);
-                book.Rating = random.Next(0, 6);
-                book.Status = Status.Draft;
-                InitializeId(book);
+                BookDetailsDto book = new()
+                {
+                    Name = _bookNames[random.Next(0, _bookNames.Count)],
+                    Author = _authors[random.Next(0, _authors.Count)],
+                    Description = $"Description{i}",
+                    DateOfPublishing = DateOnly.FromDateTime(DateTime.Now),
+                    Rating = random.Next(0, 6),
+                    Status = Status.Draft
+                };
+                Books ??= [];
+                if (Books.Count != 0)
+                    book.Id = Books.Last().Id + 1;
+                else
+                    book.Id = lastId + 1;
+
                 Books.Add(book);
             }
-            return Books.Count;
+
+            return Books;
         }
     }
 }

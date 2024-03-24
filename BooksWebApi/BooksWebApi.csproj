@@ -7,11 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BooksDataBase\**" />
+    <Content Remove="BooksDataBase\**" />
+    <EmbeddedResource Remove="BooksDataBase\**" />
+    <None Remove="BooksDataBase\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BooksProject.Shared\BooksProject.Shared.csproj" />
+    <ProjectReference Include="..\DBMeneger\DBMeneger.csproj" />
+    <ProjectReference Include="..\ModelsDto\DataBaseModels.Shared.csproj" />
   </ItemGroup>
 
 </Project>

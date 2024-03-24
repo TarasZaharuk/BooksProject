@@ -31,7 +31,7 @@ namespace BooksWebApi.Repositories
                 books = books.OrderByDescending(book => book.Name);
             }
 
-            getBooksList.Books = books.Skip(getListRequest.SkipBooks).Take(getListRequest.TakeBooks);
+            getBooksList.Books = books.Skip(getListRequest.SkipBooks).Take(getListRequest.TakeBooks).ToList();
             getBooksList.TotalCount = books.Count();
 
 

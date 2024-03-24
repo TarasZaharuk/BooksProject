@@ -50,7 +50,8 @@ namespace BooksWebApi.Controllers
         [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
         public IActionResult GenerateBooksList(int generateBooksCount)
         {
-            int countOfBooks = BooksContainer.GenerateBooksList(generateBooksCount);
+            DataBaseManipulator dbManipulator = new();
+            int countOfBooks = dbManipulator.GenerateBooksList(generateBooksCount);
             return Ok(countOfBooks);
         }
 

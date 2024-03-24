@@ -8,7 +8,9 @@ namespace BooksProject.Shared
 {
     public class GetBooksListModelDto
     {
-        public IEnumerable<BookDetailsDto> Books { get; set; } = null!;
+        public List<BookDetailsDto> Books { get; set; } = null!;
         public int TotalCount { get; set; }
+
+        public int LastId { get; set; }
     }
 }

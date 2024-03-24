@@ -7,11 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BooksWebApi">
-      <HintPath>..\BooksWebApi\obj\Debug\net8.0\ref\BooksWebApi.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\BooksProject.Shared\BooksProject.Shared.csproj" />
   </ItemGroup>
 
-	
-	
 </Project>

@@ -1,6 +1,8 @@
 using BooksWebApi.Abstractions;
 using BooksWebApi.Repositories;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BooksWebApi
 {
@@ -25,9 +27,12 @@ namespace BooksWebApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddTransient<IBooksRepository, InMemoryBooksRepository>(); //
-
+            //builder.Services.AddTransient<IBooksRepository, InMemoryBooksRepository>();
+            builder.Services.AddTransient<IBooksRepository, FileBooksRepository>();
+            
             var app = builder.Build();
+
+            
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -44,6 +49,17 @@ namespace BooksWebApi
 
             app.MapControllers();
 
+            var config = new ConfigurationBuilder();
+            config.AddJsonFile("appsettings.json");
+            config.AddEnvironmentVariables();
+            config.Build();
+            var settings = config.Build().GetRequiredSection("DataBasePathSettings").Get<AppDataBasePathSettings>();
+            if (settings == null)
+                throw new Exception("settings is null(no path)");
+
+            DBMeneger.MetaDataManeger.SetDataBaseInfoPath(settings.BooksDataBaseInfoPath);
+            DBMeneger.PageBuilder.SetDataPagesBasePath(settings.BooksDataBasePagePath);
+            DBMeneger.PageManeger.SetDataPagesBasePath(settings.BooksDataBasePagePath);
             app.Run();
         }
     }

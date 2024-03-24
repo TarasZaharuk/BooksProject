@@ -6,12 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="BooksWebApi">
-      <HintPath>..\BooksWebApi\obj\Debug\net8.0\ref\BooksWebApi.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-	
-	
 </Project>
