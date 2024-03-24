@@ -12,35 +12,40 @@ namespace DBMeneger
         {
             DataPagesBasePath = path;
         }
-        public static void AddBooks(List<BookDetailsDto> books)
+        public static void AddItems<Thing>(AddItemsModelDto<Thing> addItems)
         {
+            AddItemsModelDto<Thing> addItemsModelDto = new();
             do
             {
                 if (PageManeger.GetLastPage().AvailableSpace == 0)
                     throw new Exception("AvailableSpace can not be null");
 
-                List<BookDetailsDto> bookDetailsDtos = PageManeger.GetLastPageContent();
-                bookDetailsDtos.AddRange(books.Take(PageManeger.GetLastPageAvailableSpace()));
-                books = books.Skip(PageManeger.GetLastPageAvailableSpace()).ToList();
-                WriteItemsInFile(bookDetailsDtos, DataPagesBasePath + PageManeger.GetLastPageId());
-            } while (books.Count != 0);
+                List<Thing> items = PageManeger.GetLastPageContent<Thing>();
+                items.AddRange(addItems.Items.Take(PageManeger.GetLastPageAvailableSpace()));
+                addItems.Items = addItems.Items.Skip(PageManeger.GetLastPageAvailableSpace()).ToList();
+                addItemsModelDto.Items = items;
+                addItemsModelDto.FirstId = items.First().GetId();
+                addItemsModelDto.LastId  = items.Last().GetId();
+                WriteItemsInFile(DataPagesBasePath + PageManeger.GetLastPageId(), addItemsModelDto);
+            } while (addItems.Items.Count != 0);
 
         }
 
-        public static void AddBook(BookDetailsDto book)
+        public static void AddItem<Thing>(AddItemModelDto<Thing> addItem)
         {
-            List<BookDetailsDto> books = new List<BookDetailsDto>{book};
-            AddBooks(books);
+            List<Thing> items = new List<Thing>{addItem.Item};
+            AddItemsModelDto<Thing> addItems = new() { Items = items,LastId = addItem.Id,FirstId = addItem.Id};
+            AddItems(addItems);
         }
 
-        private static void WriteItemsInFile(List<BookDetailsDto> books, string path)
+        private static void WriteItemsInFile<Thing>(string path, AddItemsModelDto<Thing> addItems)
         {
             using (StreamWriter streamWriter = File.CreateText(path))
             {
-                streamWriter.Write(JsonSerializer.Serialize(books));
+                streamWriter.Write(JsonSerializer.Serialize(addItems.Items));
             }
 
-            MetaDataManeger.MetaDataHasChanged(books.Last().Id, books.Count, books.First().Id);
+            MetaDataManeger.MetaDataHasChanged(addItems.LastId, addItems.Items.Count, addItems.FirstId);
             if (PageManeger.GetLastPageAvailableSpace() == 0)
                 CreatePage();
         }
@@ -65,10 +70,10 @@ namespace DBMeneger
             return dataState.Pages.Last().AvailableSpace;
         }
 
-        public static void UpdatePage(List<BookDetailsDto> books, PageStatusModelDto page)
+        public static void UpdatePage<Thing>(PageStatusModelDto page, AddItemsModelDto<Thing> addItems)
         {
             string path = DataPagesBasePath + page.Id;
-            WriteItemsInFile(books, path);
+            WriteItemsInFile(path,addItems);
         }
 
         public static void ClearAllPages()
@@ -81,5 +86,22 @@ namespace DBMeneger
             MetaDataManeger.ClearMetaData();
         }
 
+        private static int GetId<Thing>(this Thing item)
+        {
+            if (item == null)
+                throw new Exception("things is null");
+
+            var idProperty = item.GetType().GetProperty("Id");
+            if (idProperty != null && idProperty.PropertyType == typeof(int))
+            {
+                object? Id = idProperty.GetValue(item);
+                if (Id != null)
+                    return (int)Id;
+                else throw new Exception("object not contain Id Property");
+
+            }
+            else
+                throw new Exception("object not contain Id Property");
+        }
     }
 }

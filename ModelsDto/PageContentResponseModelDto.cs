@@ -2,9 +2,9 @@
 
 namespace DataBaseModels.Shared
 {
-    public class PageContentResponseModelDto
+    public class PageContentResponseModelDto<Thing>
     {
-        public List<BookDetailsDto> Books = [];
+        public List<Thing> Items = [];
 
         public bool IsLastPage { get; set; }
 

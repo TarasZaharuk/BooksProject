@@ -1,5 +1,6 @@
 ﻿using BooksProject.Shared;
 using BooksWebApi.Abstractions;
+using DataBaseModels.Shared;
 using DBMeneger;
 
 namespace BooksWebApi.Repositories
@@ -23,7 +24,9 @@ namespace BooksWebApi.Repositories
             book.DateOfPublishing = DateOnly.FromDateTime(adedBook.DateOfPublishing);
             book.Rating = adedBook.Rating;
             book.Status = Status.Draft;
-            PageBuilder.AddBook(book);
+
+            AddItemModelDto<BookDetailsDto> addItem = new() {Item = book,Id = book.Id };
+            PageBuilder.AddItem(addItem);
             return book.Id;
         }
 

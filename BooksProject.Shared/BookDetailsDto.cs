@@ -19,12 +19,5 @@ namespace BooksProject.Shared
 
         public Status Status { get; set; }
         
-        //public BookDetailsDto(CreateBookMode createBook) 
-        //{
-        //    Id = MetaDataManeger.GetLastId() + 1;
-        //    DataState dataState = MetaDataManeger.GetDataBaseMetaData();
-        //    dataState.LastId = Id;
-        //    MetaDataManeger.MetaDataHasChanged(dataState);
-        //}
     }
 }

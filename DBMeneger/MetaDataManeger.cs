@@ -58,7 +58,7 @@ namespace DBMeneger
             page.LastId = lastId;
             page.FirstId = firstId;
             page.Id = dataBaseStatus.Pages.Last().Id;
-            page.CountOfBooks += countOfAdedBooks;
+            page.CountOfItems += countOfAdedBooks;
             page.AvailableSpace -= countOfAdedBooks;
 
             dataBaseStatus.LastId = lastId;
@@ -100,7 +100,7 @@ namespace DBMeneger
 
             foreach (var page in dataBaseStatus.Pages)
             {
-                totalCount += page.CountOfBooks;
+                totalCount += page.CountOfItems;
             }
 
             return totalCount;

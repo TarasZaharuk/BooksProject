@@ -1,10 +1,15 @@
 ﻿using BooksProject.Shared;
-using DBMeneger;
 using DataBaseModels.Shared;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace BooksWebApi.Repositories
+namespace DBMeneger
 {
-    public class DataBaseManipulator
+    public class DBManipulator
     {
         private DataBaseStatusModelDto? _dataBaseStatus;
         private List<BookDetailsDto>? Books = [];
@@ -16,31 +21,31 @@ namespace BooksWebApi.Repositories
             return book;
         }
 
-        public int GenerateBooksList(int generateBoooksCount)//
-        {
-            AddItemsModelDto<BookDetailsDto> addItems = new();
-            List<BookDetailsDto>? books = [];
-            int availableSpace = PageManeger.GetLastPageAvailableSpace();
-            int countOfBooks = 0;
-            do
-            {
-                if (generateBoooksCount < availableSpace)
-                    books = BooksGenerator.GenerateBooksList(generateBoooksCount);
-                else
-                    books = BooksGenerator.GenerateBooksList(PageManeger.GetLastPageAvailableSpace());
+        //public int GenerateBooksList(int generateBoooksCount)//
+        //{
+        //    AddItemsModelDto<BookDetailsDto> addItems = new();
+        //    List<BookDetailsDto>? books = [];
+        //    int availableSpace = PageManeger.GetLastPageAvailableSpace();
+        //    int countOfBooks = 0;
+        //    do
+        //    {
+        //        if (generateBoooksCount < availableSpace)
+        //            books = BooksGenerator.GenerateBooksList(generateBoooksCount);
+        //        else
+        //            books = BooksGenerator.GenerateBooksList(PageManeger.GetLastPageAvailableSpace());
 
-                if (books == null)
-                    throw new Exception("books is null");
-                addItems.Items = books;
-                addItems.FirstId = books.First().Id;
-                addItems.LastId = books.Last().Id;
-                PageBuilder.AddItems(addItems);
+        //        if (books == null)
+        //            throw new Exception("books is null");
+        //        addItems.Items = books;
+        //        addItems.FirstId = books.First().Id;
+        //        addItems.LastId = books.Last().Id;
+        //        PageBuilder.AddItems(addItems);
 
-                generateBoooksCount -= books.Count;
-                countOfBooks += books.Count;
-            } while (generateBoooksCount != 0);
-            return countOfBooks;
-        }
+        //        generateBoooksCount -= books.Count;
+        //        countOfBooks += books.Count;
+        //    } while (generateBoooksCount != 0);
+        //    return countOfBooks;
+        //}
         public List<BookDetailsDto> GetAll()
         {
             return PageManeger.GetAllPagesContent<BookDetailsDto>();
@@ -54,7 +59,7 @@ namespace BooksWebApi.Repositories
                 return getBooksList;
 
             List<BookDetailsDto> books = [];
-            
+
             do
             {
 
@@ -165,7 +170,7 @@ namespace BooksWebApi.Repositories
             addItems.Items = books;
             addItems.FirstId = books.First().Id;
             addItems.LastId = books.Last().Id;
-            PageBuilder.UpdatePage(page,addItems);
+            PageBuilder.UpdatePage(page, addItems);
         }
     }
 }

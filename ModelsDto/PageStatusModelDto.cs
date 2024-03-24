@@ -9,15 +9,15 @@ namespace DataBaseModels.Shared
 
         public int FirstId { get; set; }
 
-        public int CountOfBooks { get; set; }
+        public int CountOfItems { get; set; }
 
-        public readonly int _maxCountOfBooks = 10000;
+        public readonly int _maxCountOfItems = 10000;
 
         public int AvailableSpace { get; set; }
 
         public PageStatusModelDto() 
         {
-            AvailableSpace = _maxCountOfBooks - CountOfBooks;
+            AvailableSpace = _maxCountOfItems - CountOfItems;
             Id = 1;
         }
     }
