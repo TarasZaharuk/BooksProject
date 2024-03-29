@@ -1,13 +1,10 @@
 ﻿using BooksProject.Shared;
-using DBMeneger;
-using BooksWebApi.Repositories;
 
-namespace BooksWebApi
+namespace Services
 {
     public class BooksGenerator
     {
-        private static DataBaseManipulator _dbManipulator = new();
-        private static List<BookDetailsDto>? Books = [];
+        private List<BookDetailsDto>? Books = [];
         private static List<string> _bookNames = new List<string>
         {
             "The Shadow of the Wind",
@@ -201,11 +198,16 @@ namespace BooksWebApi
             "Haruki Murakami",
 
         };
-        public static List<BookDetailsDto>? GenerateBooksList(int generateBoooksCount)
+
+        public List<BookDetailsDto> GenerateBooksList(int lastId,int generateBoooksCount)
         {
+            if (generateBoooksCount > 10000)
+            {
+                generateBoooksCount = 10000;
+            }
             Books = [];
-            int lastId = MetaDataManeger.GetLastId();
-            Random random = new Random();
+            Random random = new();
+            int count = 0;
             for (int i = 0; i < generateBoooksCount; i++)
             {
                 BookDetailsDto book = new()
@@ -222,6 +224,7 @@ namespace BooksWebApi
                     book.Id = Books.Last().Id + 1;
                 else
                     book.Id = lastId + 1;
+                count++;
 
                 Books.Add(book);
             }

@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataBaseModels.Shared
+namespace BooksProject.Shared
 {
-    internal class Class2
+    public interface IGenericDBItemsType
     {
+        string Name { get; set; }
+
+        int Id { get; set; }
     }
 }

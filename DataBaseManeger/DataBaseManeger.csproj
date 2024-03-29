@@ -8,7 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BooksProject.Shared\BooksProject.Shared.csproj" />
-    <ProjectReference Include="..\ModelsDto\DataBaseModels.Shared.csproj" />
+    <ProjectReference Include="..\DataBaseModels\DataBaseModels.csproj" />
+    <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,21 +1,16 @@
 using BooksProject.Shared;
 using BooksWebApi.Abstractions;
-using BooksWebApi.Repositories;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
+
 
 namespace BooksWebApi.Controllers
 {
     [ApiController]
     [Route("api")]
-    public class BooksController : ControllerBase
+    public class BooksController(IBooksRepository booksRepository) : ControllerBase
     {
-        private readonly IBooksRepository _booksRepository;
-        public BooksController(IBooksRepository booksRepository)
-        {
-            _booksRepository = booksRepository;
-        }
+        private readonly IBooksRepository _booksRepository = booksRepository;
 
         [HttpGet("books/{id}")]
         [ProducesResponseType<BookDetailsDto>(StatusCodes.Status200OK)]
@@ -30,7 +25,7 @@ namespace BooksWebApi.Controllers
 
 
         [HttpGet("books")]
-        [ProducesResponseType<GetBooksListModelDto>(StatusCodes.Status200OK)]
+        [ProducesResponseType<GetBooksListModelDto<BookDetailsDto>>(StatusCodes.Status200OK)]
         public IActionResult GetAll([FromQuery]GetListRequestDto getListRequest)
         {
             return Ok(_booksRepository.GetAll(getListRequest));
@@ -50,9 +45,17 @@ namespace BooksWebApi.Controllers
         [ProducesResponseType<BookAddModelDto>(StatusCodes.Status201Created)]
         public IActionResult GenerateBooksList(int generateBooksCount)
         {
-            DataBaseManipulator dbManipulator = new();
-            int countOfBooks = dbManipulator.GenerateBooksList(generateBooksCount);
-            return Ok(countOfBooks);
+            int count = generateBooksCount;
+            BooksGenerator booksGenerator = new();
+            List<BookDetailsDto> books = [];
+            do
+            {
+                books = booksGenerator.GenerateBooksList(_booksRepository.GetLastItemId(), count);
+                _booksRepository.AddBooks(books);
+                count -= books.Count();
+            } while (count != 0);
+            
+            return Ok(generateBooksCount);
         }
 
 

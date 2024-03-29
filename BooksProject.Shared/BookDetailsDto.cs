@@ -3,7 +3,7 @@ using System.Data.Common;
 
 namespace BooksProject.Shared
 {
-    public class BookDetailsDto
+    public class BookDetailsDto : IGenericDBItemsType
     {
         public int Id { get; set; }
 

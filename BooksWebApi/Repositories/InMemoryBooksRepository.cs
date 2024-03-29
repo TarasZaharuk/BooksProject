@@ -10,15 +10,15 @@ namespace BooksWebApi.Repositories
     public class InMemoryBooksRepository : IBooksRepository
     {
 
-        public GetBooksListModelDto GetAll(GetListRequestDto getListRequest)
+        public GetBooksListModelDto<BookDetailsDto> GetAll(GetListRequestDto getListRequest)
         {
 
-            GetBooksListModelDto getBooksList = new GetBooksListModelDto();
+            GetBooksListModelDto<BookDetailsDto> getBooksList = new GetBooksListModelDto<BookDetailsDto>();
             IEnumerable<BookDetailsDto> books = BooksContainer.Books;
 
-            if (getListRequest.SearchBooks != null)
+            if (getListRequest.SearchItems != null)
             {
-                books = books.Where(book => book.Name.Contains(getListRequest.SearchBooks)); 
+                books = books.Where(book => book.Name.Contains(getListRequest.SearchItems)); 
             }
 
             if (getListRequest.NameSortOrder == SortOrder.Ascending)
@@ -31,7 +31,7 @@ namespace BooksWebApi.Repositories
                 books = books.OrderByDescending(book => book.Name);
             }
 
-            getBooksList.Books = books.Skip(getListRequest.SkipBooks).Take(getListRequest.TakeBooks).ToList();
+            getBooksList.Items = books.Skip(getListRequest.SkipItems).Take(getListRequest.TakeItems).ToList();
             getBooksList.TotalCount = books.Count();
 
 
@@ -77,5 +77,16 @@ namespace BooksWebApi.Repositories
             return book.Id;
         }
 
+        public void AddBooks(List<BookDetailsDto> books)
+        {
+            BooksContainer.Books.AddRange(books);
+        }
+
+        public int GetLastItemId()
+        {
+            if(BooksContainer.Books.Count > 0)
+                return BooksContainer.Books.Last().Id;
+            else return 0;
+        }
     }
 }

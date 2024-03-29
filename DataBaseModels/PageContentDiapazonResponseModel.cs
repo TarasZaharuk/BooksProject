@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataBaseModels.Shared
+namespace DataBaseModels
 {
-    public class PageContentDiapazonResponseModelDto
+    public class PageContentDiapazonResponseModel
     {
-        public PageStatusModelDto Page { get; set; } = new();
+        public PageStatusModel Page { get; set; } = null!;
 
         public int CountOfItemsBeforePage { get; set; }
     }

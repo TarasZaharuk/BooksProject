@@ -15,7 +15,7 @@
 
 <PageTitle>Books</PageTitle>
 <h1>Books</h1>
-<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_booksListResponse.Books" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
+<MudTable ReadOnly="_isDialogVisible" Hover="true" Style="z-index:0; display:block" Items="_booksListResponse.Items" ServerData="@(new Func<TableState, Task<TableData<BookDetailsDto>>>(LoadData))"
           @ref="_table" Height="75vh" Breakpoint="Breakpoint.Sm" HorizontalScrollbar="_isDialogVisible">
     <ToolBarContent>
         @if (!_isDialogVisible)
@@ -105,7 +105,7 @@
 
     [Inject]
     private IDialogService DialogService { get; set; } = null!;
-    private GetBooksListModelDto _booksListResponse = new GetBooksListModelDto();
+    private GetBooksListModelDto<BookDetailsDto> _booksListResponse = new();
     private MudTable<BookDetailsDto> _table = null!;
     private Random _random = new Random();
     private DateTime? _date = DateTime.Now;
@@ -132,11 +132,15 @@
             {
                 _sortBooksCase = SortOrder.Descending;
             }
+            else
+            {
+                _sortBooksCase = SortOrder.None;
+            }
         }
 
         await LoadBooksFromServer();
         StateHasChanged();
-        return new TableData<BookDetailsDto>() { Items = _booksListResponse.Books };
+        return new TableData<BookDetailsDto>() { Items = _booksListResponse.Items };
     }
 
     private void OnSearch(string text)
@@ -147,7 +151,7 @@
 
     private async Task DeleteBook(int id)
     {
-        BookDetailsDto? book = _booksListResponse.Books.SingleOrDefault(book => book.Id == id);
+        BookDetailsDto? book = _booksListResponse.Items.SingleOrDefault(book => book.Id == id);
         if (book != null)
         {
             bool? result = await DialogService.ShowMessageBox(
@@ -226,7 +230,7 @@
     {
         _baseAddres = Configuration["BaseAddres"];
         string queryString = QueryStringBuilder.ToQueryString(GetListRequest());
-        var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto>($"{_baseAddres}/books?{queryString}");
+        var books = await httpClient.GetFromJsonAsync<GetBooksListModelDto<BookDetailsDto>>($"{_baseAddres}/books?{queryString}");
         if (books != null)
         {
             _booksListResponse = books;
@@ -254,9 +258,9 @@
         GetListRequestDto getListRequest = new GetListRequestDto();
 
         getListRequest.NameSortOrder = _sortBooksCase;
-        getListRequest.SearchBooks = _searchString;
-        getListRequest.SkipBooks = GetSkipBooksCount();
-        getListRequest.TakeBooks = _takeBooks;
+        getListRequest.SearchItems = _searchString;
+        getListRequest.SkipItems = GetSkipBooksCount();
+        getListRequest.TakeItems = _takeBooks;
 
         return getListRequest;
     }

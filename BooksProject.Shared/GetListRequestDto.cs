@@ -10,10 +10,10 @@ namespace BooksProject.Shared
     {
         public SortOrder NameSortOrder { get; set; }
 
-        public string? SearchBooks { get; set; }
+        public string? SearchItems { get; set; }
 
-        public int SkipBooks { get; set;}
+        public int SkipItems { get; set;}
 
-        public int TakeBooks { get; set; }
+        public int TakeItems { get; set; }
     }
 }

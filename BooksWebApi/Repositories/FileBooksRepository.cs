@@ -1,18 +1,18 @@
 ﻿using BooksProject.Shared;
 using BooksWebApi.Abstractions;
-using DataBaseModels.Shared;
-using DBMeneger;
+using DataBaseModels;
+using DataBaseManeger.Abstractions;
 
 namespace BooksWebApi.Repositories
 {
-    public class FileBooksRepository : IBooksRepository
-    {
-        private DataBaseManipulator _dbManipulator = new();
+    public class FileBooksRepository(IDataBase<BookDetailsDto> dataBase) : IBooksRepository
+    {        
+        private IDataBase<BookDetailsDto> _dataBase = dataBase;
 
         public int AddBook(BookAddModelDto adedBook)
         {
             var book = new BookDetailsDto();
-            _dbManipulator.InitializeId(book);
+            _dataBase.InitializeId(book);
 
             if (string.IsNullOrWhiteSpace(adedBook.Description))
             {
@@ -25,29 +25,37 @@ namespace BooksWebApi.Repositories
             book.Rating = adedBook.Rating;
             book.Status = Status.Draft;
 
-            AddItemModelDto<BookDetailsDto> addItem = new() {Item = book,Id = book.Id };
-            PageBuilder.AddItem(addItem);
+            _dataBase.AddItem(book);
             return book.Id;
         }
 
+        public void AddBooks(List<BookDetailsDto> books)
+        {
+            _dataBase.AddItems(books);
+        }
         public void DeleteAll()
         {
-            _dbManipulator.DeleteAll();
+            _dataBase.DeleteAll();
         }
 
         public void DeleteBook(int id)
         {
-            _dbManipulator.DeleteBook(id);
+            _dataBase.DeleteItem(id);
         }
 
-        public GetBooksListModelDto? GetAll(GetListRequestDto getListRequest)
+        public GetBooksListModelDto<BookDetailsDto>? GetAll(GetListRequestDto getListRequest)
         {
-            return _dbManipulator.GetAll(getListRequest);
+            return _dataBase.GetAll(getListRequest);
         }
 
         public BookDetailsDto? GetById(int id)
         {
-            return _dbManipulator.GetById(id);
+            return _dataBase.GetById(id);
+        }
+
+        public int GetLastItemId()
+        {
+            return _dataBase.GetLastId();
         }
 
     }
