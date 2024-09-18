@@ -46,11 +46,11 @@ namespace BooksWebApi.Controllers
         public IActionResult GenerateBooksList(int generateBooksCount)
         {
             int count = generateBooksCount;
-            BooksGenerator booksGenerator = new();
+            BooksGenerator booksGenerator = new BooksGenerator();
             List<BookDetailsDto> books = [];
             do
             {
-                books = booksGenerator.GenerateBooksList(_booksRepository.GetLastItemId(), count);
+                books = booksGenerator.GenerateBooksList(_booksRepository.GetLastItemId(), count,false);
                 _booksRepository.AddBooks(books);
                 count -= books.Count();
             } while (count != 0);

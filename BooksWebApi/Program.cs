@@ -3,10 +3,6 @@ using BooksWebApi.Abstractions;
 using BooksWebApi.Repositories;
 using DataBaseManeger;
 using DataBaseManeger.Abstractions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BooksWebApi
 {
@@ -33,8 +29,10 @@ namespace BooksWebApi
             builder.Services.AddSwaggerGen();
             //builder.Services.AddTransient<IBooksRepository, InMemoryBooksRepository>();
             builder.Services.AddTransient<IDataBase<BookDetailsDto>, DBManipulator<BookDetailsDto>>();
-            builder.Services.AddTransient<IBooksRepository, FileBooksRepository>();
-
+            //builder.Services.AddTransient<IBooksRepository, FileBooksRepository>();
+            builder.Services.AddTransient<IBooksRepository, SQLBooksRepository>();
+            builder.Services.AddTransient<SQLBooksRepository>();
+            builder.Services.AddScoped<DBManipulator>();
             var app = builder.Build();
 
             

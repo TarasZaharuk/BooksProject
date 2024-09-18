@@ -250,7 +250,11 @@
 
     protected int GetSkipBooksCount()
     {
-        return (_indexOfSelectedTablePage - 1) * _countOfBooksPerPage;
+        int skipBooks = (_indexOfSelectedTablePage - 1) * _countOfBooksPerPage;
+        if (skipBooks > 0)
+            return skipBooks;
+        else
+            return 0;
     }
 
     protected GetListRequestDto GetListRequest()

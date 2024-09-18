@@ -199,7 +199,7 @@ namespace Services
 
         };
 
-        public List<BookDetailsDto> GenerateBooksList(int lastId,int generateBoooksCount)
+        public List<BookDetailsDto> GenerateBooksList(int lastId,int generateBoooksCount, bool InitializeId)
         {
             if (generateBoooksCount > 10000)
             {
@@ -207,7 +207,6 @@ namespace Services
             }
             Books = [];
             Random random = new();
-            int count = 0;
             for (int i = 0; i < generateBoooksCount; i++)
             {
                 BookDetailsDto book = new()
@@ -220,12 +219,17 @@ namespace Services
                     Status = Status.Draft
                 };
                 Books ??= [];
-                if (Books.Count != 0)
-                    book.Id = Books.Last().Id + 1;
+                if (InitializeId)
+                {
+                    if (Books.Count != 0)
+                        book.Id = Books.Last().Id + 1;
+                    else
+                        book.Id = lastId + 1;
+                }
                 else
-                    book.Id = lastId + 1;
-                count++;
-
+                {
+                    book.Id = 0;
+                }
                 Books.Add(book);
             }
 
